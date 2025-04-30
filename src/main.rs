@@ -1,6 +1,6 @@
 use bevy::{
-    color::palettes::basic::GREEN, color::palettes::basic::PURPLE, color::palettes::basic::RED,
-    prelude::*,
+    color::palettes::basic::GRAY, color::palettes::basic::GREEN, color::palettes::basic::PURPLE,
+    color::palettes::basic::RED, prelude::*,
 };
 
 const TILE_COLOR: Srgba = GREEN;
@@ -14,8 +14,13 @@ fn main() {
         .run();
 }
 
+#[derive(Component, Default)]
+struct Tile {
+    sugar: u32,
+}
+
 #[derive(Component)]
-struct Tile;
+struct Sugar;
 
 fn setup(
     mut commands: Commands,
@@ -45,13 +50,48 @@ fn setup(
             } else {
                 TILE_COLOR
             };
-            let _parent = commands.spawn((
+            commands.spawn((
                 Mesh2d(meshes.add(Rectangle::default())),
                 MeshMaterial2d(materials.add(Color::from(color))),
                 Transform::default()
                     .with_scale(TILE_SIZE.extend(0.))
                     .with_translation(tile_position.extend(0.)),
-                Tile,
+                Tile::default(),
+            ));
+            /*
+                .with_child((
+                    Mesh2d(meshes.add(Rectangle::default())),
+                    MeshMaterial2d(materials.add(Color::from(RED))),
+                    //MeshMaterial2d(materials.add(Color::from(GRAY))),
+                    Transform::default()
+                        .with_scale(Vec3::new(
+                            //0.1 * TILE_SIZE.x,
+                            0.1,
+                            //TILE_SIZE.y - 2. * TILE_GAP,
+                            (TILE_SIZE.y - 2. * TILE_GAP) / TILE_SIZE.y,
+                            1.,
+                        ))
+                        .with_translation(Vec3::new(-0.4, 0., 0.)),
+                    //.with_translation(Vec3::new(-0.5 * TILE_SIZE.x, -0.5 * TILE_SIZE.y, 1.)),
+                    Sugar,
+                ));
+            */
+            commands.spawn((
+                Mesh2d(meshes.add(Rectangle::default())),
+                MeshMaterial2d(materials.add(Color::from(GRAY))),
+                Transform::default()
+                    .with_scale(Vec3::new(
+                        0.2 * TILE_SIZE.x,
+                        TILE_SIZE.y - 2. * TILE_GAP,
+                        //(TILE_SIZE.y - 2. * TILE_GAP) / TILE_SIZE.y,
+                        1.,
+                    ))
+                    .with_translation(Vec3::new(
+                        tile_position.x + (0.4 * TILE_SIZE.x),
+                        tile_position.y, // + (-0.5 * TILE_SIZE.y),
+                        10.,
+                    )),
+                Sugar,
             ));
         }
     }
