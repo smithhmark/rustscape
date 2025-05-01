@@ -1,7 +1,9 @@
 use bevy::{
-    color::palettes::basic::GRAY, color::palettes::basic::GREEN, color::palettes::basic::PURPLE,
-    color::palettes::basic::RED, prelude::*,
+    color::palettes::basic::BLUE, color::palettes::basic::GRAY, color::palettes::basic::GREEN,
+    color::palettes::basic::PURPLE, color::palettes::basic::RED, prelude::*,
 };
+use rand::Rng;
+use std::f32;
 
 const TILE_COLOR: Srgba = GREEN;
 const TILE_SIZE: Vec2 = Vec2::new(30., 30.);
@@ -19,8 +21,26 @@ struct Tile {
     sugar: u32,
 }
 
+#[derive(Component, Default)]
+struct Coord {
+    x: u32,
+    y: u32,
+}
+
+impl Coord {
+    fn tile_position(&self) -> Vec2 {
+        Vec2::new(
+            self.x as f32 * (TILE_GAP + TILE_SIZE.x),
+            self.y as f32 * (TILE_GAP + TILE_SIZE.y),
+        )
+    }
+}
+
 #[derive(Component)]
 struct Sugar;
+
+#[derive(Component)]
+struct Agent;
 
 fn setup(
     mut commands: Commands,
@@ -32,19 +52,20 @@ fn setup(
     // determine the size of a tile
     let rows = 20;
     let cols = 30;
-    let side_margin = 10.0;
-    let top_margin = 10.0;
+    let _side_margin = 10.0;
+    let _top_margin = 10.0;
     let start_corner = Vec2::new(
+        // this should become a Resource
         cols as f32 * (TILE_SIZE.x + TILE_GAP) / 2.,
         rows as f32 * (TILE_SIZE.y + TILE_GAP) / 2.,
     );
 
+    let agents = rows + cols;
+
     for row in 0..rows {
         for column in 0..cols {
-            let tile_position = Vec2::new(
-                side_margin + column as f32 * (TILE_GAP + TILE_SIZE.x),
-                top_margin + row as f32 * (TILE_GAP + TILE_SIZE.y),
-            ) - start_corner;
+            let coord = Coord { x: column, y: row };
+            let tile_position = coord.tile_position() - start_corner;
             let color = if row == 2 && column == 3 {
                 PURPLE
             } else {
@@ -57,6 +78,7 @@ fn setup(
                     .with_scale(TILE_SIZE.extend(0.))
                     .with_translation(tile_position.extend(0.)),
                 Tile::default(),
+                coord,
             ));
             /*
                 .with_child((
@@ -94,6 +116,22 @@ fn setup(
                 Sugar,
             ));
         }
+    }
+
+    for _agent in 0..agents {
+        let x = rand::thread_rng().gen_range(0..cols);
+        let y = rand::thread_rng().gen_range(0..rows);
+        let coord = Coord { x, y };
+        let tile_position = coord.tile_position() - start_corner;
+        commands.spawn((
+            Mesh2d(meshes.add(Circle::default())),
+            MeshMaterial2d(materials.add(Color::from(BLUE))),
+            Transform::default()
+                .with_scale(Vec3::splat(0.7 * f32::min(TILE_SIZE.x, TILE_SIZE.y)))
+                .with_translation(Vec3::new(tile_position.x, tile_position.y, 100.)),
+            Agent,
+            coord,
+        ));
     }
     /*
     commands.spawn((
